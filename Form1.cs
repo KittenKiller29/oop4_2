@@ -10,26 +10,138 @@ using System.Windows.Forms;
 
 namespace oop4_2
 {
-    public partial class Form1 : Form
-    {
+    public partial class Form1 : Form { 
+        Model model;//объявление модели
         public Form1()
         {
             InitializeComponent();
-        }
-
-        private void textBox1_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label1_Click(object sender, EventArgs e)
-        {
-
+            model = new Model();//инициализация модели
+            model.observers += new System.EventHandler(this.UpdateFromModel);//подписка на обновления модели
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-
+            UpdateFromModel(this, e);
         }
+
+        private void numericUpDown1_ValueChanged(object sender, EventArgs e)//метод смены значения numeric1
+        {
+            model.SetA(Decimal.ToInt32(numericUpDown1.Value));
+        }//конец метода
+
+        private void numericUpDown2_ValueChanged(object sender, EventArgs e)//метод смены значения numeric2
+        {
+            model.SetB(Decimal.ToInt32(numericUpDown2.Value));
+        }//конец метода
+
+        private void numericUpDown3_ValueChanged(object sender, EventArgs e)//метод смены значения numeric3
+        {
+            model.SetC(Decimal.ToInt32(numericUpDown3.Value));
+        }//конец метода
+        private void trackBar1_Scroll(object sender, EventArgs e)//метод смены значения track1
+        {
+            model.SetA(trackBar1.Value);
+        }//конец метода
+        private void trackBar2_Scroll(object sender, EventArgs e)//метод смены значения track2
+        {
+            model.SetB(trackBar2.Value);
+        }//конец метода
+        private void trackBar3_Scroll(object sender, EventArgs e)//метод смены значения track3
+        {
+            model.SetC(trackBar3.Value);
+        }//конец метода
+        private void UpdateFromModel(object sender,EventArgs e)//метод обновления модели
+        {
+            textBox1.Text = model.GetA().ToString();
+            textBox2.Text = model.GetB().ToString();
+            textBox3.Text = model.GetC().ToString();
+            numericUpDown1.Value = model.GetA();
+            numericUpDown2.Value = model.GetB();
+            numericUpDown3.Value = model.GetC();
+            trackBar1.Value = model.GetA();
+            trackBar2.Value = model.GetB();
+            trackBar3.Value = model.GetC();
+        }//конец метода
+
+        private void textBox1_KeyDown(object sender, KeyEventArgs e)//метод изменения значения tb1
+        {
+            if(e.KeyCode==Keys.Enter)
+               model.SetA(Int32.Parse(textBox1.Text));
+        }//конец метода
+        private void textBox2_KeyDown(object sender, KeyEventArgs e)//метод смены значения tb2
+        {
+            if (e.KeyCode == Keys.Enter)
+                model.SetB(Int32.Parse(textBox2.Text));
+        }//конец метода
+        private void textBox3_KeyDown(object sender, KeyEventArgs e)//метод смены значени tb3
+        {
+            if (e.KeyCode == Keys.Enter)
+                model.SetC(Int32.Parse(textBox3.Text));
+        }//конец метода
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)//метод сохранения значений A и C при закрытии формы
+        {
+            Properties.Settings.Default.value_A = trackBar1.Value;
+            Properties.Settings.Default.value_C = trackBar3.Value;
+            Properties.Settings.Default.Save();
+        }//конец метода
+    }
+    class Model//модель
+    {
+       private int A, B, C;//объявление элементов модели
+       public System.EventHandler observers;
+        public Model()
+        {
+            A = Properties.Settings.Default.value_A;
+            B = 0;
+            C = Properties.Settings.Default.value_C;
+            
+        }
+        public int GetA()//геттер для А
+        {
+            return A;
+        }//конец метода
+        public int GetB()//геттер для B
+        {
+            return B;
+        }//конец метода
+        public int GetC()//геттер для С
+        {
+            return C;
+        }//конец метода
+        public void SetA(int a)//сеттер для А
+        {
+            if (a>C)
+            {
+                observers.Invoke(this, null);
+                return;
+            }
+            if (a > B && a <= C)
+                B = a;
+            A = a;
+           observers.Invoke(this, null);
+        }//конец метода
+        public void SetB(int b)//сеттер для В
+        {
+            if (b > C || b < A)
+            {
+                observers.Invoke(this, null);
+                return;
+            }
+            B = b;
+            observers.Invoke(this, null);
+        }//конец метода
+        public void SetC(int c)//сеттер для С
+        {
+            if (c < A)
+            {
+                observers.Invoke(this, null);
+                return;
+            }
+            if (c<B)
+                B = c;
+            C = c;
+            observers.Invoke(this, null);
+        }//конец метода
     }
 }
